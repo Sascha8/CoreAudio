@@ -1,0 +1,7 @@
+/*.dcu
+/example/*.dsk
+/example/*.local
+/example/*.identcache
+/example/*.stat
+/example/*.~dsk
+/example/*.dcu
