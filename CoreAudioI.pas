@@ -201,7 +201,7 @@ Type
 	procedure OnDeviceStateChanged(pwstrDeviceId: LPCWSTR; dwNewState: DWORD); safecall;
 	procedure OnDeviceAdded(pwstrDeviceId: LPCWSTR); safecall;
 	procedure OnDeviceRemoved(pwstrDeviceId: LPCWSTR); safecall;
-	procedure OnDefaultDeviceChanged(flow: EDataFlow; role: ERole; pwstrDefaultDeviceId: LPCWSTR); safecall;
+	procedure OnDefaultDeviceChanged(flow: EDataFlow; role: ERole; pwstrDeviceId: LPCWSTR); safecall;
 	procedure OnPropertyValueChanged(pwstrDeviceId: LPCWSTR; key: PROPERTYKEY); safecall;
 end;
 

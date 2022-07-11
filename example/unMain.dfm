@@ -25,7 +25,6 @@ object frmMain: TfrmMain
       'Memo1')
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitTop = 468
   end
   object GroupBox1: TGroupBox
     Left = 4
@@ -73,6 +72,13 @@ object frmMain: TfrmMain
       Width = 25
       Height = 13
       Caption = 'laPos'
+    end
+    object laVolPos: TLabel
+      Left = 69
+      Top = 10
+      Width = 39
+      Height = 13
+      Caption = 'laVolPos'
     end
     object cbEndpointMute: TCheckBox
       Left = 72
@@ -126,14 +132,14 @@ object frmMain: TfrmMain
       TabOrder = 4
       OnClick = buUnregisterEndpointNotifyClick
     end
-    object Button2: TButton
+    object buGetBalance: TButton
       Left = 242
       Top = 80
       Width = 75
       Height = 25
       Caption = 'Get Balance'
       TabOrder = 5
-      OnClick = Button2Click
+      OnClick = buGetBalanceClick
     end
   end
   object GroupBox5: TGroupBox
@@ -191,14 +197,14 @@ object frmMain: TfrmMain
       TabOrder = 4
       OnClick = buRemoveSessionControlClick
     end
-    object Button4: TButton
+    object buRenameSession: TButton
       Left = 11
       Top = 163
       Width = 104
       Height = 25
       Caption = 'Rename session to'
       TabOrder = 5
-      OnClick = Button4Click
+      OnClick = buRenameSessionClick
     end
     object edSessionName: TEdit
       Left = 121
@@ -322,6 +328,24 @@ object frmMain: TfrmMain
     Height = 17
     Step = 1
     TabOrder = 4
+  end
+  object Button1: TButton
+    Left = 528
+    Top = 360
+    Width = 75
+    Height = 25
+    Caption = '1'
+    TabOrder = 5
+    OnClick = Button1Click
+  end
+  object Button2: TButton
+    Left = 623
+    Top = 360
+    Width = 75
+    Height = 25
+    Caption = '50'
+    TabOrder = 6
+    OnClick = Button2Click
   end
   object Timer1: TTimer
     Enabled = False

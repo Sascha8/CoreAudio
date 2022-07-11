@@ -91,32 +91,32 @@ type
 end;
 
 {IMMNotificationClient}
-TDeviceStateEvent   = procedure (strDeviceId:String; dwNewState:DWORD)of object;
-TDeviceAddedEvent   = procedure (strDeviceId:String )of object;
-TDeviceRemovedEvent = procedure (strDeviceId:String)of object;
-TDefaultDeviceEvent = procedure (flow:EDataFlow;role:ERole;strDefaultDeviceId:String)of object;
-TPropertyValueEvent = procedure (strDeviceId:String; key:PROPERTYKEY)of object;
+	TOnDefaultDeviceChanged	= procedure (flow:EDataFlow;role:ERole;strDeviceId:String)of object;
+	TOnDeviceAdded					= procedure (strDeviceId:String) of object;
+	TOnDeviceRemoved				= procedure (strDeviceId:String) of object;
+	TOnDeviceStateChanged		= procedure (strDeviceId:String; dwNewState:DWORD)of object;
+	TOnPropertyValueChanged	= procedure (strDeviceId:String; key:PROPERTYKEY)of object;
 
 type
 	TIMMNotifyClient=class(TInterfacedObject,IMMNotificationClient)
 	Private
-		FOnDeviceState: TDeviceStateEvent;
-		FOnDeviceAdded:TDeviceAddedEvent;
-		FOnDeviceRemoved:TDeviceRemovedEvent;
-		FOnDefaultDevice:TDefaultDeviceEvent;
-		FOnProperty:TPropertyValueEvent;
+		FOnDefaultDeviceChanged:TOnDefaultDeviceChanged;
+		FOnDeviceAdded:TOnDeviceAdded;
+		FOnDeviceRemoved:TOnDeviceRemoved;
+		FOnDeviceStateChanged: TOnDeviceStateChanged;
+		FOnPropertyValueChanged:TOnPropertyValueChanged;
 
-		procedure OnDeviceStateChanged(pwstrDeviceId:LPCWSTR; dwNewState:DWORD); safecall;
+		procedure OnDefaultDeviceChanged(flow:EDataFlow;role:ERole;pwstrDeviceId:LPCWSTR); safecall;
 		procedure OnDeviceAdded(pwstrDeviceId:LPCWSTR ); safecall;
 		procedure OnDeviceRemoved(pwstrDeviceId:LPCWSTR); safecall;
-		procedure OnDefaultDeviceChanged(flow:EDataFlow;role:ERole;pwstrDefaultDeviceId:LPCWSTR); safecall;
+		procedure OnDeviceStateChanged(pwstrDeviceId:LPCWSTR; dwNewState:DWORD); safecall;
 		procedure OnPropertyValueChanged(pwstrDeviceId:LPCWSTR; key:PROPERTYKEY); safecall;
 	Public
-		property OnIMMDeviceState: TDeviceStateEvent read FOnDeviceState write  FOnDeviceState;
-		property OnIMMDeviceAdded: TDeviceAddedEvent read FOnDeviceAdded write FOnDeviceAdded;
-		property OnIMMDeviceRemoved:TDeviceRemovedEvent read FOnDeviceRemoved write FOnDeviceRemoved;
-		property OnIMMDefaultDevice:TDefaultDeviceEvent read FOnDefaultDevice write FOnDefaultDevice;
-		property OnIMMProperty:TPropertyValueEvent read FOnProperty write FOnProperty;
+		property OnIMMDefaultDeviceChanged:TOnDefaultDeviceChanged read FOnDefaultDeviceChanged write FOnDefaultDeviceChanged;
+		property OnIMMDeviceAdded: TOnDeviceAdded read FOnDeviceAdded write FOnDeviceAdded;
+		property OnIMMDeviceRemoved: TOnDeviceRemoved read FOnDeviceRemoved write FOnDeviceRemoved;
+		property OnIMMDeviceStateChanged: TOnDeviceStateChanged read FOnDeviceStateChanged write FOnDeviceStateChanged;
+		property OnIMMPropertyValueChanged: TOnPropertyValueChanged read FOnPropertyValueChanged write FOnPropertyValueChanged;
 end;
 {$ENDREGION}
 
@@ -152,11 +152,11 @@ private
 	FOnSessionDisconnected:TSessionDisconnectedEvent;
 
 	{IMMNotification (Device Added,Remove,changed)}
-	FOnDeviceState: TDeviceStateEvent;
-	FOnDeviceAdded:TDeviceAddedEvent;
-	FOnDeviceRemoved:TDeviceRemovedEvent;
-	FOnDefaultDevice:TDefaultDeviceEvent;
-	FOnProperty:TPropertyValueEvent;
+	FOnDefaultDeviceChanged:TOnDefaultDeviceChanged;
+	FOnDeviceAdded:TOnDeviceAdded;
+	FOnDeviceRemoved:TOnDeviceRemoved;
+	FOnDeviceStateChanged: TOnDeviceStateChanged;
+	FOnPropertyValueChanged:TOnPropertyValueChanged;
 public
 	FDeviceEnumerator: IMMDeviceEnumerator;
 	FDefaultDevice: IMMDevice;
@@ -180,7 +180,7 @@ public
 	Procedure SetBalance(Channel:Cardinal;value:Integer);
 	Procedure SetSimpleVolume(value:Integer);
 	Procedure GetFriendlyDeviceNames(var slNames:TStringlist);
-  Procedure GetFriendlyDeviceNames2(var slNames:TStringlist;DeviceState: TDeviceState);
+	Procedure GetFriendlyDeviceNames2(var slNames:TStringlist;DeviceState: TDeviceState);
 	Function GetDefaultDeviceID():String;
 	Function GetDefaultDeviceFriendlyName():String;
 	Function GetMasterPeakValue():Integer;
@@ -201,11 +201,11 @@ public
 	property OnGroupingParam: TGroupingParamEvent read FOnGroupingParam write FOnGroupingParam;
 	property OnSessionState: TSessionStateEvent read FOnSessionState write FOnSessionState;
 	property OnSessionDisconnectedNotify: TSessionDisconnectedEvent read FOnSessionDisconnected write FOnSessionDisconnected;
-	property OnIMMDeviceState: TDeviceStateEvent read FOnDeviceState write FOnDeviceState;
-	property OnIMMDeviceAdded: TDeviceAddedEvent read FOnDeviceAdded write FOnDeviceAdded;
-	property OnIMMDeviceRemoved:TDeviceRemovedEvent read FOnDeviceRemoved write FOnDeviceRemoved;
-	property OnIMMDefaultDevice:TDefaultDeviceEvent read FOnDefaultDevice write FOnDefaultDevice;
-	property OnIMMProperty:TPropertyValueEvent read FOnProperty write FOnProperty;
+	property OnIMMDefaultDeviceChanged:TOnDefaultDeviceChanged read FOnDefaultDeviceChanged write FOnDefaultDeviceChanged;
+	property OnIMMDeviceStateChanged: TOnDeviceStateChanged read FOnDeviceStateChanged write FOnDeviceStateChanged;
+	property OnIMMDeviceAdded: TOnDeviceAdded read FOnDeviceAdded write FOnDeviceAdded;
+	property OnIMMDeviceRemoved:TOnDeviceRemoved read FOnDeviceRemoved write FOnDeviceRemoved;
+	property OnIMMPropertyValueChanged:TOnPropertyValueChanged read FOnPropertyValueChanged write FOnPropertyValueChanged;
 end;
 
 
@@ -255,11 +255,12 @@ begin
 	FLastOleError:='Could not register endpoint notification';
 	FIMMNotifyClient:=TIMMNotifyClient.Create;
 	FDeviceEnumerator.RegisterEndpointNotificationCallback(FIMMNotifyClient);
-	self.FIMMNotifyClient.FOnDeviceState:=OnIMMDeviceState;
-	self.FIMMNotifyClient.FOnDeviceAdded:=OnIMMDeviceAdded;
-	self.FIMMNotifyClient.FOnDeviceRemoved:=OnIMMDeviceRemoved;
-	self.FIMMNotifyClient.FOnDefaultDevice:=OnIMMDefaultDevice;
-	self.FIMMNotifyClient.FOnProperty:=OnIMMProperty;
+
+	FIMMNotifyClient.FOnDefaultDeviceChanged:=OnIMMDefaultDeviceChanged;
+	FIMMNotifyClient.FOnDeviceAdded:=OnIMMDeviceAdded;
+	FIMMNotifyClient.FOnDeviceRemoved:=OnIMMDeviceRemoved;
+	FIMMNotifyClient.FOnDeviceStateChanged:=OnIMMDeviceStateChanged;
+	FIMMNotifyClient.FOnPropertyValueChanged:=OnIMMPropertyValueChanged;
 End;
 
 Procedure TCoreAudioMixer.RegisterEndpointVolumeChange();
@@ -460,15 +461,18 @@ end;
 Procedure TCoreAudioMixer.SetSessionName(strName:String);
 Begin
 	If FASessionControl= nil then Exit;
-	FASessionControl.SetDisplayName(LPCWSTR(strName),@AppGuid);
+	FASessionControl.SetDisplayName(LPCWSTR(strName),@FAppGuid);
 End;
 
 Function TCoreAudioMixer.GetFriendlyName(ID:LPWSTR):String;
 Var
 	MMDevice:IMMDevice;
 	varName:TPropvariant;
- 	FProps:IPropertyStore;
+	FProps:IPropertyStore;
 Begin
+	Result:='';
+
+	if ID='' then Exit;
 	MMDevice:=FDeviceEnumerator.GetDevice(ID);
 	FProps:=MMDevice.OpenPropertyStore(STGM_READ);
 	FProps.GetValue(PKEY_Device_FriendlyName,varName);
@@ -633,15 +637,10 @@ End;
 
 
 {$REGION 'NotifyClientEvents'}
-Procedure TIMMNotifyClient.OnDeviceStateChanged(pwstrDeviceId:LPCWSTR; dwNewState:DWORD); safecall;
-Begin
-	if assigned(self.OnIMMDeviceState) then OnIMMDeviceState(pwstrDeviceId,dwNewState);
-//	DEVICE_STATE_ACTIVE
-//	DEVICE_STATE_DISABLED
-//	DEVICE_STATE_NOTPRESENT
-//	DEVICE_STATE_UNPLUGGED
-//	DEVICE_STATEMASK_ALL
 
+Procedure TIMMNotifyClient.OnDefaultDeviceChanged(flow:EDataFlow;role:ERole;pwstrDeviceId:LPCWSTR); safecall;
+Begin
+	if assigned(self.OnIMMDefaultDeviceChanged) then OnIMMDefaultDeviceChanged(flow,role,pwstrDeviceId);
 End;
 
 Procedure TIMMNotifyClient.OnDeviceAdded(pwstrDeviceId:LPCWSTR ); safecall;
@@ -654,14 +653,20 @@ Begin
 	if assigned(self.OnIMMDeviceRemoved) then OnIMMDeviceRemoved(pwstrDeviceId);
 End;
 
-Procedure TIMMNotifyClient.OnDefaultDeviceChanged(flow:EDataFlow;role:ERole;pwstrDefaultDeviceId:LPCWSTR); safecall;
+
+Procedure TIMMNotifyClient.OnDeviceStateChanged(pwstrDeviceId:LPCWSTR; dwNewState:DWORD); safecall;
 Begin
-	if assigned(self.OnIMMDefaultDevice) then OnIMMDefaultDevice(flow,role,pwstrDefaultDeviceId);
+	if assigned(self.OnIMMDeviceStateChanged) then OnIMMDeviceStateChanged(pwstrDeviceId,dwNewState);
+//	DEVICE_STATE_ACTIVE
+//	DEVICE_STATE_DISABLED
+//	DEVICE_STATE_NOTPRESENT
+//	DEVICE_STATE_UNPLUGGED
+//	DEVICE_STATEMASK_ALL
 End;
 
 Procedure TIMMNotifyClient.OnPropertyValueChanged(pwstrDeviceId:LPCWSTR; key:PROPERTYKEY); safecall;
 Begin
-	if assigned(self.OnIMMProperty) then OnIMMProperty(pwstrDeviceId,key);
+	if assigned(self.OnIMMPropertyValueChanged) then OnIMMPropertyValueChanged(pwstrDeviceId,key);
 End;
 {$ENDREGION}
 

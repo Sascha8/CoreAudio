@@ -2,7 +2,8 @@ program CoreAudioApi;
 
 uses
   Vcl.Forms,
-  unMain in 'unMain.pas' {frmMain};
+  unMain in 'unMain.pas' {frmMain},
+  CoreAudioMixer in '..\CoreAudioMixer.pas';
 
 {$R *.res}
 {$DEFINE USE_SAFECALL}

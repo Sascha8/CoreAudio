@@ -1,65 +1,82 @@
+
+{
+Example is currently a bit messy because of trying to get channel balance stuff to work.
+}
+
 unit unMain;
 
 interface
 
 uses
-	Winapi.Windows, System.SysUtils, System.Classes, Vcl.Controls, Vcl.Forms,
+	Winapi.Windows,Winapi.Messages, System.SysUtils, System.Classes, Vcl.Controls, Vcl.Forms,
 	Vcl.Dialogs,Vcl.StdCtrls,	Vcl.ExtCtrls, Vcl.ComCtrls,
 	CoreAudioMixer,caConsts,ActiveX;
 
 
+
+	type
+	TTrackBar = class(Vcl.ComCtrls.TTrackBar)
+	protected
+		procedure CNHScroll(var Message: TWMHScroll); message CN_HSCROLL;
+	end;
+
 type
 	TfrmMain = class(TForm)
-    Memo1: TMemo;
-    GroupBox1: TGroupBox;
-    laMax: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    cbEndpointMute: TCheckBox;
+		Memo1: TMemo;
+		GroupBox1: TGroupBox;
+		laMax: TLabel;
+		Label4: TLabel;
+		Label5: TLabel;
+		cbEndpointMute: TCheckBox;
 		tbEndpointBal: TTrackBar;
 		tbEndpointVol: TTrackBar;
-    GroupBox5: TGroupBox;
-    tbSessionVol: TTrackBar;
-    cbSessionMute: TCheckBox;
-    GroupBox4: TGroupBox;
-    buGetFriendlyName: TButton;
-    rbRender: TRadioButton;
-    rbCapture: TRadioButton;
-    rbAll: TRadioButton;
-    laPos: TLabel;
-    pbMaster: TProgressBar;
-    Timer1: TTimer;
-    buRegisterNotification: TButton;
-    buUnregisterNotification: TButton;
-    buRegisterEnpointNotify: TButton;
-    buUnregisterEndpointNotify: TButton;
-    Button2: TButton;
-    buRemoveSessionControl: TButton;
-    Button4: TButton;
-    cbAllEP: TRadioButton;
-    cbActiveEP: TRadioButton;
-    cbUnpluggedEP: TRadioButton;
-    cbDisabledEP: TRadioButton;
-    cbNotPresentEP: TRadioButton;
-    GroupBox2: TGroupBox;
-    GroupBox3: TGroupBox;
-    edSessionName: TEdit;
+		GroupBox5: TGroupBox;
+		tbSessionVol: TTrackBar;
+		cbSessionMute: TCheckBox;
+		GroupBox4: TGroupBox;
+		buGetFriendlyName: TButton;
+		rbRender: TRadioButton;
+		rbCapture: TRadioButton;
+		rbAll: TRadioButton;
+		laPos: TLabel;
+		pbMaster: TProgressBar;
+		Timer1: TTimer;
+		buRegisterNotification: TButton;
+		buUnregisterNotification: TButton;
+		buRegisterEnpointNotify: TButton;
+		buUnregisterEndpointNotify: TButton;
+		buGetBalance: TButton;
+		buRemoveSessionControl: TButton;
+		buRenameSession: TButton;
+		cbAllEP: TRadioButton;
+		cbActiveEP: TRadioButton;
+		cbUnpluggedEP: TRadioButton;
+		cbDisabledEP: TRadioButton;
+		cbNotPresentEP: TRadioButton;
+		GroupBox2: TGroupBox;
+		GroupBox3: TGroupBox;
+		edSessionName: TEdit;
+		Button1: TButton;
+		Button2: TButton;
+		laVolPos: TLabel;
 		procedure FormCreate(Sender: TObject);
-    procedure tbEndpointBalChange(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure cbEndpointMuteClick(Sender: TObject);
-    procedure cbSessionMuteClick(Sender: TObject);
+		procedure tbEndpointBalChange(Sender: TObject);
+		procedure buGetBalanceClick(Sender: TObject);
+		procedure cbEndpointMuteClick(Sender: TObject);
+		procedure cbSessionMuteClick(Sender: TObject);
 		procedure tbEndpointVolChange(Sender: TObject);
 		procedure tbSessionVolChange(Sender: TObject);
 		procedure buGetFriendlyNameClick(Sender: TObject);
 		procedure Timer1Timer(Sender: TObject);
 		procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure buRegisterEnpointNotifyClick(Sender: TObject);
-    procedure buUnregisterEndpointNotifyClick(Sender: TObject);
-    procedure buRegisterNotificationClick(Sender: TObject);
-    procedure buUnregisterNotificationClick(Sender: TObject);
-    procedure buRemoveSessionControlClick(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
+		procedure buRegisterEnpointNotifyClick(Sender: TObject);
+		procedure buUnregisterEndpointNotifyClick(Sender: TObject);
+		procedure buRegisterNotificationClick(Sender: TObject);
+		procedure buUnregisterNotificationClick(Sender: TObject);
+		procedure buRemoveSessionControlClick(Sender: TObject);
+		procedure buRenameSessionClick(Sender: TObject);
+		procedure Button1Click(Sender: TObject);
+		procedure Button2Click(Sender: TObject);
 	private
 		Procedure OnEndpointVolumeEvent(pNotify:TMasterVolumeData);
 		procedure OnSimpleVolumeEvent(NewVolume:Integer; NewMute:Boolean; EventContext:TGUID);
@@ -69,11 +86,11 @@ type
 		procedure OnGroupingParamEvent  (NewGroupingParam:PGUID; EventContext:TGuid);
 		procedure OnSessionStateEvent (NewState:TAudioSessionState);
 		procedure OnSessionDisconnectedEvent (DisconnectReason:TAudioSessionDisconnectReason);
-		procedure OnDeviceStateEvent   (strDeviceId:String; dwNewState:DWORD);
-		procedure OnDeviceAddedEvent   (strDeviceId:String);
-		procedure OnDeviceRemovedEvent (strDeviceId:String);
-		procedure OnDefaultDeviceEvent (flow:EDataFlow;role:ERole;strDefaultDeviceId:String);
-		procedure OnPropertyValueEvent (strDeviceId:String; key:PROPERTYKEY);
+		procedure OnDeviceStateChanged (strDeviceId:String; dwNewState:DWORD);
+		procedure OnDeviceAdded (strDeviceId:String);
+		procedure OnDeviceRemoved (strDeviceId:String);
+		procedure OnDefaultDeviceChanged (flow:EDataFlow;role:ERole;strDeviceId:String);
+		procedure OnPropertyValueChanged (strDeviceId:String; key:PROPERTYKEY);
 
 
 	public
@@ -89,15 +106,13 @@ var
 	frmMain: TfrmMain;
 	CoreAudioMixer:TCoreAudioMixer;
 	BalanceOnChange:TBalanceOnChange;
-	MsgFromMixer:Boolean;
 	WinMajorVersion:Integer;
 	ChannelCount:Integer;
 implementation
 
-
-
 {$R *.dfm}
 
+//expermintal...
 Function CompareGuid(strSender:String;SysGuid:TGuid):String;
 Begin
 	If GuidToString(SysGuid) = GuidToString(Appguid) then frmMain.Memo1.Lines.add(strSender + ': OWN_CHANGE')
@@ -106,11 +121,10 @@ Begin
 End;
 
 
-
 procedure TfrmMain.FormCreate(Sender: TObject);
 Begin
-	edSessionName.Text:='CoreAudioTest' + TimeToStr(now);
-	AppGuid :=  StringToGUID('{92F06F7D-B140-40C7-8116-28F5BA66E991}');
+	edSessionName.Text:='CoreAudioTest_' + TimeToStr(now);
+	AppGuid := StringToGUID('{92F06F7D-B140-40C7-8116-28F5BA66E997}');
 	tbEndpointVol.Max:=100;
 	tbEndpointVol.PageSize:=10;
 	CoreAudioMixer:=TCoreAudioMixer.Create(AppGuid);
@@ -122,11 +136,11 @@ Begin
 	CoreAudioMixer.OnGroupingParam:=OnGroupingParamEvent;
 	CoreAudioMixer.OnSessionState:=OnSessionStateEvent;
 	CoreAudioMixer.OnSessionDisconnectedNotify:=OnSessionDisconnectedEvent;
-	CoreAudioMixer.OnIMMDeviceState:=OnDeviceStateEvent;
-	CoreAudioMixer.OnIMMDeviceAdded:=OnDeviceAddedEvent;
-	CoreAudioMixer.OnIMMDeviceRemoved:=OnDeviceRemovedEvent;
-	CoreAudioMixer.OnIMMDefaultDevice:=OnDefaultDeviceEvent;
-	CoreAudioMixer.OnIMMProperty:=OnPropertyValueEvent;
+	CoreAudioMixer.OnIMMDeviceStateChanged:=OnDeviceStateChanged;
+	CoreAudioMixer.OnIMMDeviceAdded:=OnDeviceAdded;
+	CoreAudioMixer.OnIMMDeviceRemoved:=OnDeviceRemoved;
+	CoreAudioMixer.OnIMMDefaultDeviceChanged:=OnDefaultDeviceChanged;
+	CoreAudioMixer.OnIMMPropertyValueChanged:=OnPropertyValueChanged;
 	BalanceOnChange:=tbEndpointBal.OnChange;
 	try
 		CoreAudioMixer.CreateEndpointMixer();
@@ -152,7 +166,6 @@ Begin
 	End;
 	end;
 
-
 	tbEndpointVol.Enabled:=True;
 	cbEndpointMute.Checked:=CoreAudioMixer.GetEndpointMute;
 	cbSessionMute.Checked:=CoreAudioMixer.GetSessionMute;
@@ -168,94 +181,17 @@ begin
 	CoreAudioMixer.Destroy;
 end;
 
-
-
-procedure TfrmMain.buGetFriendlyNameClick(Sender: TObject);
-Var
-	sl:TStringList;
-  aDeviceState:TDeviceState;
-
-begin
-	sl:=TStringList.Create;
-	try
-	  if cbAllEP.Checked then aDeviceState:=dsAll
-  	else if cbActiveEP.Checked then aDeviceState:=dsActive
-	  else if cbUnpluggedEP.Checked then aDeviceState:=dsUnplugged
-  	else if cbDisabledEP.Checked then aDeviceState:=dsDisabled
-	  else if cbNotPresentEP.Checked then aDeviceState:=dsNotPresent;
-		CoreAudioMixer.GetFriendlyDeviceNames2(sl,aDeviceState);
-		Memo1.Lines.Add(sl.text);
-  finally
-		sl.Free;
-  end;
-end;
-
-procedure TfrmMain.buRegisterNotificationClick(Sender: TObject);
-begin
-	CoreAudioMixer.RegisterAudioSessionNotification();
-end;
-
-procedure TfrmMain.buRemoveSessionControlClick(Sender: TObject);
-begin
-	CoreAudioMixer.FreeSessionMixer;
-end;
-
-procedure TfrmMain.buUnregisterNotificationClick(Sender: TObject);
-begin
-	CoreAudioMixer.UnRegisterAudioSessionNotification();
-end;
-
-
-
-procedure TfrmMain.Button2Click(Sender: TObject);
-Var
-	L,R:Integer;
-begin
-	tbEndpointBal.OnChange:=nil;
-	L:=CoreAudioMixer.GetChannelVolumeLevel(0) ;
-	R:=CoreAudioMixer.GetChannelVolumeLevel(1);
-	If L > R then tbEndpointBal.Max:=L else tbEndpointBal.Max:=R;
-	tbEndpointBal.Min := tbEndpointBal.Max * -1;
-	tbEndpointBal.Position:=R-L;
-	laMax.Caption:=tbEndpointBal.Max.ToString;
-	Memo1.Lines.Add('L:' + L.ToString + '  R:' + R.ToString);
-	tbEndpointBal.OnChange:=BalanceOnChange;
-end;
-
-procedure TfrmMain.Button4Click(Sender: TObject);
-begin
-	CoreAudioMixer.SetSessionName(edSessionName.text);
-end;
-
-procedure TfrmMain.buRegisterEnpointNotifyClick(Sender: TObject);
-begin
-	CoreAudioMixer.RegisterEndpointVolumeChange();
-end;
-
-procedure TfrmMain.buUnregisterEndpointNotifyClick(Sender: TObject);
-begin
-	CoreAudioMixer.UnRegisterEndpointVolumeChange();
-end;
-
-
-procedure TfrmMain.cbEndpointMuteClick(Sender: TObject);
-begin
-	CoreAudioMixer.SetEndpointMute(cbEndpointMute.Checked);
-end;
-
-procedure TfrmMain.cbSessionMuteClick(Sender: TObject);
-begin
-	CoreAudioMixer.SetSessionMute(cbSessionMute.Checked);
-end;
-
-
+{************************************************************ API Callbacks *****************************************************}
 
 Procedure TfrmMain.OnEndpointVolumeEvent (pNotify:TMasterVolumeData);
 Begin
-	//CompareGuid('Master-' + pNotify.intMasterVolume.ToString ,pNotify.guidEventContext);
+	laVolPos.Caption:=pNotify.intMasterVolume.ToString;
+	//CompareGuid('EVP',pNotify.guidEventContext);
 	if pNotify.guidEventContext = AppGuid then Exit;
 	Memo1.Lines.Add('HANDLEMaster');
 	if pNotify.intMasterVolume <> tbEndpointVol.Position then tbEndpointVol.Position:=pNotify.intMasterVolume;
+
+//  	if pNotify.afChannelVolumes[0] <> tbEndpointBal.Position then tbEndpointBal.Position:=pNotify.afChannelVolumes[0];
 	laPos.Caption:=pNotify.afChannelVolumes[0].ToString + '/' + pNotify.afChannelVolumes[1].ToString;
 	if pNotify.bMuted <> cbEndpointMute.Checked then
 	Begin
@@ -279,13 +215,68 @@ End;
 
 procedure TfrmMain.OnChannelVolumeEvent(ChannelCount:Integer; NewChannelArray:Array of Integer; ChangedChannel:Integer;EventContext:TGuid);
 Begin
+	if EventContext = AppGuid then Exit;
 	if tbEndpointBal.Position <> NewChannelArray[0] then tbEndpointBal.Position:=Round(NewChannelArray[0] *100);
 End;
 
+{************************************************************ Control Events *****************************************************}
+
+
+procedure TfrmMain.tbEndpointVolChange(Sender: TObject);
+begin
+	// Delphis onChangeEvent for TTrackbar fires even when change comes from code. This will give a race condition.
+	// Bett to react on HScroll Msg
+end;
+
+procedure TfrmMain.tbSessionVolChange(Sender: TObject);
+begin
+	//
+end;
+
+procedure TTrackBar.CNHScroll(var Message: TWMHScroll);
+begin
+	if message.ScrollBar = frmMain.tbEndpointVol.Handle then
+	Begin
+		if Message.ScrollCode = SB_THUMBTRACK then
+		begin
+			Message.Result := 0;
+			frmMain.Memo1.Lines.add('On HScroll ' + Message.ScrollCode.ToString + ' ' +  frmMain.tbEndpointVol.Text);
+			frmMain.Memo1.Lines.add(Message.Pos.ToString);
+			CoreAudioMixer.SetMasterVolume(Message.Pos);
+		end
+		else
+		Begin
+			inherited;
+			CoreAudioMixer.SetMasterVolume(frmMain.tbEndpointVol.Position);
+		End;
+	end
+
+	else if message.ScrollBar = frmMain.tbSessionVol.Handle then
+	Begin
+		if Message.ScrollCode = SB_THUMBTRACK then
+		begin
+			Message.Result := 0;
+			frmMain.Memo1.Lines.add('OnScroll Session' + frmMain.tbSessionVol.Text);
+			frmMain.Memo1.Lines.add(Message.Pos.ToString);
+			CoreAudioMixer.SetSimpleVolume(Message.Pos);
+		End
+		else
+		Begin
+			inherited;
+			CoreAudioMixer.SetSimpleVolume(frmMain.tbSessionVol.Position);
+		End;
+	End;
+end;
+
+
+
+
+//This is buggy
 procedure TfrmMain.tbEndpointBalChange(Sender: TObject);
 Var
 	p:Integer;
 begin
+	Memo1.Lines.add('tbBalance!');
 	laPos.Caption:=tbEndpointBal.Position.ToString;
 	if tbEndpointBal.Position =0 then
 	Begin
@@ -307,15 +298,96 @@ begin
 	End;
 end;
 
-procedure TfrmMain.tbEndpointVolChange(Sender: TObject);
+
+procedure TfrmMain.cbEndpointMuteClick(Sender: TObject);
 begin
-	Memo1.Lines.add('tbMaster!');
-	CoreAudioMixer.SetMasterVolume(tbEndpointVol.Position);
+	CoreAudioMixer.SetEndpointMute(cbEndpointMute.Checked);
 end;
 
-procedure TfrmMain.tbSessionVolChange(Sender: TObject);
+procedure TfrmMain.cbSessionMuteClick(Sender: TObject);
 begin
-	CoreAudioMixer.SetSimpleVolume(tbSessionVol.Position);
+	CoreAudioMixer.SetSessionMute(cbSessionMute.Checked);
+end;
+
+procedure TfrmMain.buGetFriendlyNameClick(Sender: TObject);
+Var
+	sl:TStringList;
+	aDeviceState:TDeviceState;
+begin
+	sl:=TStringList.Create;
+	try
+		if cbAllEP.Checked then aDeviceState:=dsAll
+		else if cbActiveEP.Checked then aDeviceState:=dsActive
+		else if cbUnpluggedEP.Checked then aDeviceState:=dsUnplugged
+		else if cbDisabledEP.Checked then aDeviceState:=dsDisabled
+		else if cbNotPresentEP.Checked then aDeviceState:=dsNotPresent;
+		CoreAudioMixer.GetFriendlyDeviceNames2(sl,aDeviceState);
+		Memo1.Lines.Add(sl.text);
+	finally
+		sl.Free;
+	end;
+end;
+
+procedure TfrmMain.buRegisterNotificationClick(Sender: TObject);
+begin
+	CoreAudioMixer.RegisterAudioSessionNotification();
+end;
+
+procedure TfrmMain.buRemoveSessionControlClick(Sender: TObject);
+begin
+	CoreAudioMixer.FreeSessionMixer;
+end;
+
+procedure TfrmMain.buUnregisterNotificationClick(Sender: TObject);
+begin
+	CoreAudioMixer.UnRegisterAudioSessionNotification();
+end;
+
+
+//This is buggy
+procedure TfrmMain.buGetBalanceClick(Sender: TObject);
+Var
+	L,R:Integer;
+	L1,R1:Cardinal;
+begin
+//	tbEndpointBal.OnChange:=nil;
+	L:=CoreAudioMixer.GetChannelVolumeLevel(0) ;
+	R:=CoreAudioMixer.GetChannelVolumeLevel(1);
+	Memo1.Lines.Add('L:' + L.ToString + '  R:' + R.ToString);
+	CoreAudioMixer.FEndPointVolume.GetVolumeStepInfo(L1,R1);
+	Memo1.Lines.Add('L1:' + L1.ToString + '  R1:' + R1.ToString);
+
+	If L > R then tbEndpointBal.Max:=L else tbEndpointBal.Max:=R;
+	tbEndpointBal.Min := tbEndpointBal.Max * -1;
+	tbEndpointBal.Position:=R-L;
+	laMax.Caption:=tbEndpointBal.Max.ToString;
+	Memo1.Lines.Add('L:' + L.ToString + '  R:' + R.ToString);
+ //	tbEndpointBal.OnChange:=BalanceOnChange;
+end;
+
+procedure TfrmMain.buRenameSessionClick(Sender: TObject);
+begin
+	CoreAudioMixer.SetSessionName(edSessionName.text);
+end;
+
+procedure TfrmMain.Button1Click(Sender: TObject);
+begin
+	CoreAudioMixer.FEndPointVolume.VolumeStepDown(@AppGuid);
+end;
+
+procedure TfrmMain.Button2Click(Sender: TObject);
+begin
+	CoreAudioMixer.FEndPointVolume.VolumeStepUp(@AppGuid);
+end;
+
+procedure TfrmMain.buRegisterEnpointNotifyClick(Sender: TObject);
+begin
+	CoreAudioMixer.RegisterEndpointVolumeChange();
+end;
+
+procedure TfrmMain.buUnregisterEndpointNotifyClick(Sender: TObject);
+begin
+	CoreAudioMixer.UnRegisterEndpointVolumeChange();
 end;
 
 procedure TfrmMain.Timer1Timer(Sender: TObject);
@@ -324,73 +396,69 @@ begin
 end;
 
 
-
-
-
 procedure TfrmMain.OnDisplayNameEvent(strNewDisplayName:String; EventContext:TGuid);
 begin
-	frmMain.Memo1.Lines.Add('OnDisplayNameEvent - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('NewName=' + strNewDisplayName);
+	Memo1.Lines.Add('OnDisplayNameEvent - ' + TimeToStr(Now));
+	Memo1.Lines.Add('NewName=' + strNewDisplayName);
 end;
 
-procedure TfrmMain.OnIconPathEvent (strNewIconPath:String; EventContext:TGuid);
+procedure TfrmMain.OnIconPathEvent(strNewIconPath:String; EventContext:TGuid);
 begin
-	frmMain.Memo1.Lines.Add('OnIconPathEvent - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('NewPath=' + strNewIconPath);
+	Memo1.Lines.Add('OnIconPathEvent - ' + TimeToStr(Now));
+	Memo1.Lines.Add('NewPath=' + strNewIconPath);
 end;
 
 procedure TfrmMain.OnGroupingParamEvent(NewGroupingParam:PGUID; EventContext:TGuid);
 begin
-	frmMain.Memo1.Lines.Add('OnGroupingEvent - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('NewGroupParam=' + NewGroupingParam.ToString);
+	Memo1.Lines.Add('OnGroupingEvent - ' + TimeToStr(Now));
+	Memo1.Lines.Add('NewGroupParam=' + NewGroupingParam.ToString);
 end;
 
-procedure TfrmMain.OnSessionStateEvent (NewState:TAudioSessionState);
+procedure TfrmMain.OnSessionStateEvent(NewState:TAudioSessionState);
 begin
-	frmMain.Memo1.Lines.Add('OnSessState - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('NewState=' + Integer(NewState).ToString );
+	Memo1.Lines.Add('OnSessionState - ' + TimeToStr(Now));
+	Memo1.Lines.Add('NewState=' + Integer(NewState).ToString );
 end;
 
-procedure TfrmMain.OnSessionDisconnectedEvent (DisconnectReason:TAudioSessionDisconnectReason);
+procedure TfrmMain.OnSessionDisconnectedEvent(DisconnectReason:TAudioSessionDisconnectReason);
 begin
-	frmMain.Memo1.Lines.Add('OnSessDiscon - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('DeviceID=' + Integer(DisconnectReason).ToString) ;
+	Memo1.Lines.Add('OnSessionDiscon - ' + TimeToStr(Now));
+	Memo1.Lines.Add('Disc. reason=' + Integer(DisconnectReason).ToString) ;
 end;
 
-procedure TfrmMain.OnDeviceStateEvent   (strDeviceId:String; dwNewState:DWORD);
+procedure TfrmMain.OnDeviceStateChanged(strDeviceId:String; dwNewState:DWORD);
 begin
-	frmMain.Memo1.Lines.Add('DevStatEvent - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('DeviceID=' + strDeviceID);
-
+	Memo1.Lines.Add('DevStatEvent - ' + TimeToStr(Now));
+	Memo1.Lines.Add('DeviceID=' + strDeviceID);
 end;
 
-procedure TfrmMain.OnDeviceAddedEvent   (strDeviceId:String);
+procedure TfrmMain.OnDeviceAdded(strDeviceId:String);
 begin
-	frmMain.Memo1.Lines.Add('DevAddEvent - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('DeviceID=' + strDeviceID);
+	Memo1.Lines.Add('OnDevAdded - ' + TimeToStr(Now));
+	Memo1.Lines.Add('DeviceID=' + strDeviceID);
 end;
 
-procedure TfrmMain.OnDeviceRemovedEvent (strDeviceId:String);
+procedure TfrmMain.OnDeviceRemoved(strDeviceId:String);
 begin
-	frmMain.Memo1.Lines.Add('DevRemoveEvent - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('DeviceID=' + strDeviceID);
+	Memo1.Lines.Add('OnDevRemove - ' + TimeToStr(Now));
+	Memo1.Lines.Add('DeviceID=' + strDeviceID);
 end;
 
 
-procedure TfrmMain.OnDefaultDeviceEvent(flow:EDataFlow;role:ERole;strDefaultDeviceId:String);
+procedure TfrmMain.OnDefaultDeviceChanged(flow:EDataFlow;role:ERole;strDeviceId:String);
 begin
 	if role <> 2 then exit;
-	frmMain.Memo1.Lines.Add('DefaultDeviceEvent - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('Role=' + IntToStr(role) + ' Flow=' + IntToStr(Flow));
-	frmMain.Memo1.Lines.Add('OldDefDevice=' + CoreAudioMixer.GetDefaultDeviceFriendlyName());
-	frmMain.Memo1.Lines.Add('NewDevDevice=' + strDefaultDeviceID);
+	Memo1.Lines.Add('OnDefaultDeviceChanged - ' + TimeToStr(Now));
+	Memo1.Lines.Add('Role=' + IntToStr(role) + ' Flow=' + IntToStr(Flow));
+	Memo1.Lines.Add('OldDefaultDevice=' + CoreAudioMixer.GetDefaultDeviceFriendlyName());
+	Memo1.Lines.Add('NewDefaultDevice=' + strDeviceID);
 end;
 
 
-procedure TfrmMain.OnPropertyValueEvent (strDeviceId:String; key:PROPERTYKEY);
+procedure TfrmMain.OnPropertyValueChanged(strDeviceId:String; key:PROPERTYKEY);
 begin
-	frmMain.Memo1.Lines.Add('PropValEvent - ' + DateTimeToStr(Now));
-	frmMain.Memo1.Lines.Add('DeviceID=' + strDeviceID);
+	Memo1.Lines.Add('PropValEvent - ' + TimeToStr(Now));
+	Memo1.Lines.Add('DeviceID=' + strDeviceID);
 end;
 
 
