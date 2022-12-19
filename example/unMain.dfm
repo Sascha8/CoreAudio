@@ -15,14 +15,32 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object Label1: TLabel
+    Left = 395
+    Top = 216
+    Width = 30
+    Height = 13
+    Caption = 'Teufel'
+  end
+  object Label2: TLabel
+    Left = 393
+    Top = 274
+    Width = 48
+    Height = 13
+    Caption = 'Kopfh'#246'rer'
+  end
   object Memo1: TMemo
     Left = 0
-    Top = 412
+    Top = 488
     Width = 867
-    Height = 286
+    Height = 210
     Align = alBottom
-    Lines.Strings = (
-      'Memo1')
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Consolas'
+    Font.Style = []
+    ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
   end
@@ -30,7 +48,7 @@ object frmMain: TfrmMain
     Left = 4
     Top = 8
     Width = 385
-    Height = 161
+    Height = 221
     Caption = ' EndpointVolume '
     TabOrder = 1
     object laMax: TLabel
@@ -116,7 +134,7 @@ object frmMain: TfrmMain
     end
     object buRegisterEnpointNotify: TButton
       Left = 8
-      Top = 100
+      Top = 150
       Width = 180
       Height = 27
       Caption = 'Register EndpointVolumeChange'
@@ -125,7 +143,7 @@ object frmMain: TfrmMain
     end
     object buUnregisterEndpointNotify: TButton
       Left = 8
-      Top = 128
+      Top = 176
       Width = 180
       Height = 27
       Caption = 'UnRegister EndpointVolumeChange'
@@ -140,6 +158,15 @@ object frmMain: TfrmMain
       Caption = 'Get Balance'
       TabOrder = 5
       OnClick = buGetBalanceClick
+    end
+    object Button10: TButton
+      Left = 222
+      Top = 151
+      Width = 127
+      Height = 25
+      Caption = 'CreateEndpointMixer'
+      TabOrder = 6
+      OnClick = Button10Click
     end
   end
   object GroupBox5: TGroupBox
@@ -217,7 +244,7 @@ object frmMain: TfrmMain
   end
   object GroupBox4: TGroupBox
     Left = 8
-    Top = 175
+    Top = 239
     Width = 363
     Height = 200
     Caption = 'DeviceCollection'
@@ -320,18 +347,27 @@ object frmMain: TfrmMain
         TabStop = True
       end
     end
+    object Button5: TButton
+      Left = 253
+      Top = 154
+      Width = 98
+      Height = 25
+      Caption = 'GetDefDeviceID'
+      TabOrder = 3
+      OnClick = Button5Click
+    end
   end
   object pbMaster: TProgressBar
-    Left = 412
-    Top = 316
+    Left = 416
+    Top = 365
     Width = 357
     Height = 17
     Step = 1
     TabOrder = 4
   end
   object Button1: TButton
-    Left = 528
-    Top = 360
+    Left = 784
+    Top = 125
     Width = 75
     Height = 25
     Caption = '1'
@@ -339,13 +375,31 @@ object frmMain: TfrmMain
     OnClick = Button1Click
   end
   object Button2: TButton
-    Left = 623
-    Top = 360
+    Left = 789
+    Top = 169
     Width = 75
     Height = 25
     Caption = '50'
     TabOrder = 6
     OnClick = Button2Click
+  end
+  object Button3: TButton
+    Left = 395
+    Top = 232
+    Width = 356
+    Height = 25
+    Caption = '{0.0.0.00000000}.{529b6ce4-be90-4324-ae7f-200426c04388}'
+    TabOrder = 7
+    OnClick = Button3Click
+  end
+  object Button4: TButton
+    Left = 395
+    Top = 290
+    Width = 356
+    Height = 25
+    Caption = '{0.0.0.00000000}.{ffee6305-aaab-4cca-a4cc-9f3215dd9256}'
+    TabOrder = 8
+    OnClick = Button3Click
   end
   object Timer1: TTimer
     Enabled = False

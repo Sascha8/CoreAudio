@@ -41,10 +41,10 @@ type
 	end;
 
 {$REGION 'Interfaces-Overwrite'}
+
 {AudioEndpoint}
 type
 	TEndpointVolumeEvent = procedure (pNotify:TMasterVolumeData) of object;
-
 	TNotifyEndpointVolumeEvent=class(TInterfacedObject,IAudioEndpointVolumeCallback)
 	private
 		FOnEndpointVolumeChange:TEndpointVolumeEvent;
@@ -91,11 +91,12 @@ type
 end;
 
 {IMMNotificationClient}
-	TOnDefaultDeviceChanged	= procedure (flow:EDataFlow;role:ERole;strDeviceId:String)of object;
+	TOnDefaultDeviceChanged = procedure (flow:EDataFlow;role:ERole;strDeviceId:String)of object;
 	TOnDeviceAdded					= procedure (strDeviceId:String) of object;
 	TOnDeviceRemoved				= procedure (strDeviceId:String) of object;
 	TOnDeviceStateChanged		= procedure (strDeviceId:String; dwNewState:DWORD)of object;
 	TOnPropertyValueChanged	= procedure (strDeviceId:String; key:PROPERTYKEY)of object;
+
 
 type
 	TIMMNotifyClient=class(TInterfacedObject,IMMNotificationClient)
@@ -161,6 +162,9 @@ public
 	FDeviceEnumerator: IMMDeviceEnumerator;
 	FDefaultDevice: IMMDevice;
 	FEndPointVolume:IAudioEndpointVolume;
+	FPolicyConfigClient:IPolicyConfigClient;
+	FPolicyConfig:IPolicyConfig;
+	FPolicyConfig10_1:IPolicyConfig10_1;
 
 	Constructor Create(AppGuid:TGUID);
 	Destructor Destroy;override;
@@ -181,8 +185,11 @@ public
 	Procedure SetSimpleVolume(value:Integer);
 	Procedure GetFriendlyDeviceNames(var slNames:TStringlist);
 	Procedure GetFriendlyDeviceNames2(var slNames:TStringlist;DeviceState: TDeviceState);
+	Function GetDeviceIDFromFriendlyDeviceName(FriendlyDevName:String):String;
 	Function GetDefaultDeviceID():String;
 	Function GetDefaultDeviceFriendlyName():String;
+	Function SetDefaultDeviceByDevID(devID:String):Boolean;
+	Function SetDefaultDeviceByFriendlyName(FriendlyDevName:String):Boolean;
 	Function GetMasterPeakValue():Integer;
 	Function GetFriendlyName(ID:LPWSTR):String;
 	Procedure SetSessionName(strName:String);
@@ -236,6 +243,8 @@ begin
 	FLastOleError:='Try to get DeviceEnumerator';
 	HR:=CoCreateInstance(CLASS_IMMDeviceEnumerator, nil, CLSCTX_INPROC_SERVER, IID_IMMDeviceEnumerator, FDeviceEnumerator);
 	OleCheck(HR);
+
+	HR:=CoCreateInstance(IID_PolicyConfigClient, nil, CLSCTX_ALL, IID_PolicyConfig, FPolicyConfig);
 
 	// get DefaultDevice
 	FLastOleError:='Could not got Endpoint default device! No active ouput device!';
@@ -350,6 +359,7 @@ Begin
 	if FDeviceEnumerator <> nil then FDeviceEnumerator:=nil;
 	if FDefaultDevice  <> nil then FDefaultDevice:=nil;
 	if FEndPointVolume <> nil then FEndPointVolume:=nil;
+	if FPolicyConfig <> nil then 	FPolicyConfig:=NIL;
 End;
 
 
@@ -502,6 +512,23 @@ begin
 end;
 
 
+Function TCoreAudioMixer.SetDefaultDeviceByDevID(devID:String):Boolean;
+var
+	HR:HResult;
+Begin
+	HR:=FPolicyConfig.SetDefaultEndpoint(LPWSTR(devID),eMultimedia);
+End;
+
+Function TCoreAudioMixer.SetDefaultDeviceByFriendlyName(friendlyDevName:String):Boolean;
+var
+	HR:HResult;
+Begin
+	HR:=FPolicyConfig.SetDefaultEndpoint(LPWSTR(FriendlyDevName),eMultimedia);
+End;
+
+
+
+
 Procedure TCoreAudioMixer.GetFriendlyDeviceNames2(var slNames:TStringlist;DeviceState: TDeviceState);
 Var
 	devCollection:IMMDeviceCollection;
@@ -510,11 +537,53 @@ Var
 	pEndpoint:IMMDevice;
 	endPointID:LPWSTR;
 	I:Integer;
-  str:String;
- 	FProps:IPropertyStore;
+	str:String;
+	FProps:IPropertyStore;
 Begin
 	if FDeviceEnumerator=nil then Exit;
 	devCollection:=FDeviceEnumerator.EnumAudioEndpoints(eRender, Cardinal(DeviceState));
+	Count:= devCollection.GetCount();
+	PropVariantInit(varname);
+	for I:=0 to count-1 do
+	Begin
+		str:='';
+		pEndpoint:= devCollection.Item(i);
+		endpointID:=pEndpoint.GetId();
+		str:=endpointID;
+
+		FProps:=pEndpoint.OpenPropertyStore(STGM_READ);
+		FProps.GetValue(PKEY_Device_FriendlyName,varName);
+		if varName.vt <> 0 then str:=str + ' - ' + String(varName.bstrVal);
+
+		FProps.GetValue(PKEY_Device_DeviceDesc,varName);
+		if varName.vt <> 0 then str:=str + ' - ' +  String(varName.bstrVal);
+
+		FProps.GetValue(PKEY_Device_EnumeratorName,varName);
+		if varName.vt <> 0 then str:=str + ' - ' +  String(varName.bstrVal);
+
+		FProps.GetValue(PKEY_Device_LocationPaths,varName);
+		if varName.vt <> 0 then str:=str + ' - ' + String(varName.bstrVal);
+		slNames.Add(str);
+		CoTaskMemFree(endpointID);
+	end;
+	PropVariantClear(varName);
+End;
+
+
+Function TCoreAudioMixer.GetDeviceIDFromFriendlyDeviceName(FriendlyDevName:String):String;
+Var
+	statemask:Cardinal;
+	devCollection:IMMDeviceCollection;
+	count:Cardinal;
+	varName:TPropvariant;
+	pEndpoint:IMMDevice;
+	endPointID:LPWSTR;
+	I:Integer;
+	FProps:IPropertyStore;
+Begin
+	if FDeviceEnumerator=nil then Exit;
+	StateMask:=DEVICE_STATE_ACTIVE;
+	devCollection:=FDeviceEnumerator.EnumAudioEndpoints(eRender, StateMask);
 	Count:= devCollection.GetCount();
 	PropVariantInit(varname);
 	for I:=0 to count-1 do
@@ -523,21 +592,17 @@ Begin
 		endpointID:=pEndpoint.GetId();
 		FProps:=pEndpoint.OpenPropertyStore(STGM_READ);
 		FProps.GetValue(PKEY_Device_FriendlyName,varName);
-		if varName.vt <> 0 then str:=String(varName.bstrVal);
-
-		FProps.GetValue(PKEY_Device_DeviceDesc,varName);
-		if varName.vt <> 0 then str:=str + ',' +  String(varName.bstrVal);
-
- 		FProps.GetValue(PKEY_Device_EnumeratorName,varName);
-		if varName.vt <> 0 then str:=str + ',' +  String(varName.bstrVal);
-
- 		FProps.GetValue(PKEY_Device_LocationPaths,varName);
-		if varName.vt <> 0 then str:=str + ',' + String(varName.bstrVal);
-		slNames.Add(str);
+		if String(varName.bstrVal) = FriendlyDevName then
+		Begin
+			Result:=endPointID;
+			CoTaskMemFree(endpointID);
+			break;
+		End;
 		CoTaskMemFree(endpointID);
 	end;
 	PropVariantClear(varName);
 End;
+
 
 
 // Obsolete - Use above
@@ -550,7 +615,7 @@ Var
 	pEndpoint:IMMDevice;
 	endPointID:LPWSTR;
 	I:Integer;
- 	FProps:IPropertyStore;
+	FProps:IPropertyStore;
 Begin
 	if FDeviceEnumerator=nil then Exit;
 	StateMask:=DEVICE_STATE_ACTIVE;

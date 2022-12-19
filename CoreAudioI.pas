@@ -52,6 +52,59 @@ const
 	IID_IAudioSessionControl2             : TGUID = '{bfb7ff88-7239-4fc9-8fa2-07c950be9c6d}';
 	IID_IAudioMeterInformation            : TGUID = '{C02216F6-8C67-4B5B-9D00-D008E73E0064}';
 
+	IID_PolicyConfigClient								: TGUID = '{870AF99C-171D-4F9E-AF0D-E63DF40C2BC9}';
+	IID_PolicyConfig											: TGUID = '{f8679f50-850a-41cf-9c72-430f290290c8}';
+	IID_PolicyConfig10_1									: TGUID = '{00000000-0000-0000-C000-000000000046}';
+
+
+Type
+	IPolicyConfigClient = interface(IUnknown) [IID_PolicyConfigClient]
+	Function GetMixFormat(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetDeviceFormat(pszDeviceName:LPCWSTR; bDefault:Bool; Format:PWaveFormat): DWORD; safecall;
+	Function ResetDeviceFormat(pszDeviceName:LPCWSTR): DWORD; safecall;
+	Function SetDeviceFormat(pszDeviceName:LPCWSTR; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function GetProcessingPeriod(pszDeviceName:LPCWSTR; bDefault:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetProcessingPeriod(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetShareMode(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function SetShareMode(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetPropertyValue(pszDeviceName:LPCWSTR; bFxStore:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetPropertyValue(pszDeviceName:LPCWSTR; bFxStore:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetDefaultEndpoint(pszDeviceName:LPCWSTR; role:ERole): DWORD; safecall;
+	Function SetEndpointVisibility(pszDeviceName:LPCWSTR; bVisible:Bool): DWORD; safecall;
+end;
+
+
+Type
+	IPolicyConfig10_1 = interface(IUnknown) [IID_PolicyConfig10_1]
+	Function GetMixFormat(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetDeviceFormat(pszDeviceName:LPCWSTR; bDefault:Bool; Format:PWaveFormat): DWORD; safecall;
+	Function ResetDeviceFormat(pszDeviceName:LPCWSTR): DWORD; safecall;
+	Function SetDeviceFormat(pszDeviceName:LPCWSTR; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function GetProcessingPeriod(pszDeviceName:LPCWSTR; bDefault:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetProcessingPeriod(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetShareMode(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function SetShareMode(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetPropertyValue(pszDeviceName:LPCWSTR; bFxStore:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetPropertyValue(pszDeviceName:LPCWSTR; bFxStore:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetDefaultEndpoint(pszDeviceName:LPCWSTR; role:ERole): DWORD; safecall;
+	Function SetEndpointVisibility(pszDeviceName:LPCWSTR; bVisible:Bool): DWORD; safecall;
+end;
+
+Type
+	IPolicyConfig = interface(IUnknown) [IID_PolicyConfig]
+	Function GetMixFormat(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetDeviceFormat(pszDeviceName:LPCWSTR; bDefault:Bool; Format:PWaveFormat): DWORD; safecall;
+	Function ResetDeviceFormat(pszDeviceName:LPCWSTR): DWORD; safecall;
+	Function SetDeviceFormat(pszDeviceName:LPCWSTR; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function GetProcessingPeriod(pszDeviceName:LPCWSTR; bDefault:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetProcessingPeriod(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetShareMode(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function SetShareMode(pszDeviceName:LPCWSTR; Format:PWaveFormatEx): DWORD; safecall;
+	Function GetPropertyValue(pszDeviceName:LPCWSTR; bFxStore:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetPropertyValue(pszDeviceName:LPCWSTR; bFxStore:Bool; Format:PWaveFormatEx; Format2:PWaveFormatEx): DWORD; safecall;
+	Function SetDefaultEndpoint(pszDeviceName:LPCWSTR; role:ERole): DWORD; safecall;
+	Function SetEndpointVisibility(pszDeviceName:LPCWSTR; bVisible:Bool): DWORD; safecall;
+end;
 
 
 Type
