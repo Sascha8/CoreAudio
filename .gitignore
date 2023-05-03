@@ -1,4 +1,6 @@
 __history
+__recovery
+
 /*.dcu
 /example/*.dsk
 /example/*.local
