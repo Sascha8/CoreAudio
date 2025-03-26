@@ -59,12 +59,15 @@ type
 		Button1: TButton;
 		Button2: TButton;
 		laVolPos: TLabel;
-    Button3: TButton;
-    Button4: TButton;
+    buSetDefDevice1: TButton;
+    buSetDefDevice2: TButton;
     Button5: TButton;
     Label1: TLabel;
     Label2: TLabel;
     Button10: TButton;
+    GroupBox6: TGroupBox;
+    Label3: TLabel;
+    Label6: TLabel;
 		procedure FormCreate(Sender: TObject);
 		procedure tbEndpointBalChange(Sender: TObject);
 		procedure buGetBalanceClick(Sender: TObject);
@@ -83,7 +86,7 @@ type
 		procedure buRenameSessionClick(Sender: TObject);
 		procedure Button1Click(Sender: TObject);
 		procedure Button2Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure buSetDefDevice1Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button10Click(Sender: TObject);
 	private
@@ -132,7 +135,7 @@ End;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 Begin
-	edSessionName.Text:='CoreAudioTest_' + TimeToStr(now);
+	edSessionName.Text:='CA-Test_' + TimeToStr(now);
 	AppGuid := StringToGUID('{92F06F7D-B140-40C7-8116-28F5BA66E997}');
 	tbEndpointVol.Max:=100;
 	tbEndpointVol.PageSize:=10;
@@ -396,8 +399,10 @@ begin
 	CoreAudioMixer.FEndPointVolume.VolumeStepUp(@AppGuid);
 end;
 
-procedure TfrmMain.Button3Click(Sender: TObject);
+procedure TfrmMain.buSetDefDevice1Click(Sender: TObject);
 begin
+	// Switches the default device windows play audio from.
+	// Button Caption is hardcoded. Change DevId in Caption to your IDs to make this work.
 	CoreAudioMixer.SetDefaultDeviceByDevID((Sender as TButton).Caption);
 end;
 

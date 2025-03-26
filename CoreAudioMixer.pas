@@ -3,7 +3,7 @@ unit CoreAudioMixer;
 {
 	MIT License
 
-Copyright (c) 2022 Sascha Ott
+Copyright (c) 2022-2025 Sascha Ott
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -471,7 +471,7 @@ end;
 Procedure TCoreAudioMixer.SetSessionName(strName:String);
 Begin
 	If FASessionControl= nil then Exit;
-	FASessionControl.SetDisplayName(LPCWSTR(strName),@FAppGuid);
+	FASessionControl.SetDisplayName(PWideChar(strName),@FAppGuid);     // March 2025: LPWSTR(strVar) is wrong!
 End;
 
 Function TCoreAudioMixer.GetFriendlyName(ID:LPWSTR):String;
@@ -511,20 +511,6 @@ begin
 	PropVariantClear(varName);
 end;
 
-
-Function TCoreAudioMixer.SetDefaultDeviceByDevID(devID:String):Boolean;
-var
-	HR:HResult;
-Begin
-	HR:=FPolicyConfig.SetDefaultEndpoint(LPWSTR(devID),eMultimedia);
-End;
-
-Function TCoreAudioMixer.SetDefaultDeviceByFriendlyName(friendlyDevName:String):Boolean;
-var
-	HR:HResult;
-Begin
-	HR:=FPolicyConfig.SetDefaultEndpoint(LPWSTR(FriendlyDevName),eMultimedia);
-End;
 
 
 
@@ -570,6 +556,36 @@ Begin
 End;
 
 
+// Obsolete - Use above
+Procedure TCoreAudioMixer.GetFriendlyDeviceNames(var slNames:TStringlist);
+Var
+	statemask:Cardinal;
+	devCollection:IMMDeviceCollection;
+	count:Cardinal;
+	varName:TPropvariant;
+	pEndpoint:IMMDevice;
+	endPointID:LPWSTR;
+	I:Integer;
+	FProps:IPropertyStore;
+Begin
+	if FDeviceEnumerator=nil then Exit;
+	StateMask:=DEVICE_STATE_ACTIVE;
+	devCollection:=FDeviceEnumerator.EnumAudioEndpoints(eRender, StateMask);
+	Count:= devCollection.GetCount();
+	PropVariantInit(varname);
+	for I:=0 to count-1 do
+	Begin
+		pEndpoint:= devCollection.Item(i);
+		endpointID:=pEndpoint.GetId();
+		FProps:=pEndpoint.OpenPropertyStore(STGM_READ);
+		FProps.GetValue(PKEY_Device_FriendlyName,varName);
+		slNames.add(String(varName.bstrVal));
+		CoTaskMemFree(endpointID);
+	end;
+	PropVariantClear(varName);
+End;
+
+
 Function TCoreAudioMixer.GetDeviceIDFromFriendlyDeviceName(FriendlyDevName:String):String;
 Var
 	statemask:Cardinal;
@@ -603,36 +619,20 @@ Begin
 	PropVariantClear(varName);
 End;
 
-
-
-// Obsolete - Use above
-Procedure TCoreAudioMixer.GetFriendlyDeviceNames(var slNames:TStringlist);
-Var
-	statemask:Cardinal;
-	devCollection:IMMDeviceCollection;
-	count:Cardinal;
-	varName:TPropvariant;
-	pEndpoint:IMMDevice;
-	endPointID:LPWSTR;
-	I:Integer;
-	FProps:IPropertyStore;
+Function TCoreAudioMixer.SetDefaultDeviceByDevID(devID:String):Boolean;
+var
+	HR:HResult;
 Begin
-	if FDeviceEnumerator=nil then Exit;
-	StateMask:=DEVICE_STATE_ACTIVE;
-	devCollection:=FDeviceEnumerator.EnumAudioEndpoints(eRender, StateMask);
-	Count:= devCollection.GetCount();
-	PropVariantInit(varname);
-	for I:=0 to count-1 do
-	Begin
-		pEndpoint:= devCollection.Item(i);
-		endpointID:=pEndpoint.GetId();
-		FProps:=pEndpoint.OpenPropertyStore(STGM_READ);
-		FProps.GetValue(PKEY_Device_FriendlyName,varName);
-		slNames.add(String(varName.bstrVal));
-		CoTaskMemFree(endpointID);
-	end;
-	PropVariantClear(varName);
+	HR:=FPolicyConfig.SetDefaultEndpoint(PWideChar(devID),eMultimedia);    // March 2025: LPWSTR(strVar) is wrong!
 End;
+
+Function TCoreAudioMixer.SetDefaultDeviceByFriendlyName(friendlyDevName:String):Boolean;
+var
+	HR:HResult;
+Begin
+	HR:=FPolicyConfig.SetDefaultEndpoint(PWideChar(friendlyDevName),eMultimedia);    // March 2025: LPWSTR(strVar) is wrong!
+End;
+
 
 
 {===========================================================================================================================================}
@@ -734,24 +734,5 @@ Begin
 	if assigned(self.OnIMMPropertyValueChanged) then OnIMMPropertyValueChanged(pwstrDeviceId,key);
 End;
 {$ENDREGION}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 end.

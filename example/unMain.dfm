@@ -3,7 +3,7 @@ object frmMain: TfrmMain
   Top = 0
   Caption = 'frmMain'
   ClientHeight = 698
-  ClientWidth = 867
+  ClientWidth = 819
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,24 +15,17 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
-    Left = 395
-    Top = 216
-    Width = 30
+  object Label6: TLabel
+    Left = 377
+    Top = 384
+    Width = 86
     Height = 13
-    Caption = 'Teufel'
-  end
-  object Label2: TLabel
-    Left = 393
-    Top = 274
-    Width = 48
-    Height = 13
-    Caption = 'Kopfh'#246'rer'
+    Caption = 'MasterPeakValue:'
   end
   object Memo1: TMemo
     Left = 0
     Top = 488
-    Width = 867
+    Width = 819
     Height = 210
     Align = alBottom
     Font.Charset = ANSI_CHARSET
@@ -43,6 +36,7 @@ object frmMain: TfrmMain
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
+    ExplicitWidth = 867
   end
   object GroupBox1: TGroupBox
     Left = 4
@@ -260,15 +254,15 @@ object frmMain: TfrmMain
     end
     object GroupBox2: TGroupBox
       Left = 184
-      Top = 38
-      Width = 161
-      Height = 81
-      Caption = 'Input/Output device'
+      Top = 26
+      Width = 171
+      Height = 109
+      Caption = 'Input/Output device (dont work)'
       Enabled = False
       TabOrder = 1
       object rbAll: TRadioButton
         Left = 8
-        Top = 56
+        Top = 58
         Width = 97
         Height = 17
         Caption = 'All devices'
@@ -358,54 +352,92 @@ object frmMain: TfrmMain
     end
   end
   object pbMaster: TProgressBar
-    Left = 416
-    Top = 365
-    Width = 357
+    Left = 377
+    Top = 401
+    Width = 389
     Height = 17
     Step = 1
     TabOrder = 4
   end
   object Button1: TButton
-    Left = 784
-    Top = 125
+    Left = 736
+    Top = 97
     Width = 75
     Height = 25
     Caption = '1'
     TabOrder = 5
+    Visible = False
     OnClick = Button1Click
   end
   object Button2: TButton
-    Left = 789
-    Top = 169
+    Left = 736
+    Top = 128
     Width = 75
     Height = 25
     Caption = '50'
     TabOrder = 6
+    Visible = False
     OnClick = Button2Click
   end
-  object Button3: TButton
-    Left = 395
-    Top = 232
-    Width = 356
-    Height = 25
-    Caption = '{0.0.0.00000000}.{529b6ce4-be90-4324-ae7f-200426c04388}'
+  object GroupBox6: TGroupBox
+    Left = 377
+    Top = 239
+    Width = 389
+    Height = 139
+    Caption = 'SetDefaultDeviceByDevID'
     TabOrder = 7
-    OnClick = Button3Click
-  end
-  object Button4: TButton
-    Left = 395
-    Top = 290
-    Width = 356
-    Height = 25
-    Caption = '{0.0.0.00000000}.{ffee6305-aaab-4cca-a4cc-9f3215dd9256}'
-    TabOrder = 8
-    OnClick = Button3Click
+    object Label1: TLabel
+      Left = 9
+      Top = 24
+      Width = 30
+      Height = 13
+      Caption = 'Teufel'
+    end
+    object Label2: TLabel
+      Left = 9
+      Top = 80
+      Width = 48
+      Height = 13
+      Caption = 'Kopfh'#246'rer'
+    end
+    object Label3: TLabel
+      Left = 130
+      Top = 14
+      Width = 125
+      Height = 14
+      AutoSize = False
+      Caption = 'Demo - see Source'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold, fsItalic]
+      ParentFont = False
+    end
+    object buSetDefDevice1: TButton
+      Left = 9
+      Top = 40
+      Width = 356
+      Height = 25
+      Caption = '{0.0.0.00000000}.{83baae62-af29-4fe0-b35b-e87b2aceeba7}'
+      TabOrder = 0
+      OnClick = buSetDefDevice1Click
+    end
+    object buSetDefDevice2: TButton
+      Left = 9
+      Top = 96
+      Width = 356
+      Height = 25
+      Caption = '{0.0.0.00000000}.{f80d9111-9b31-4290-8629-910e398e6e23}'
+      TabOrder = 1
+      OnClick = buSetDefDevice1Click
+    end
   end
   object Timer1: TTimer
     Enabled = False
     Interval = 100
     OnTimer = Timer1Timer
-    Left = 590
-    Top = 404
+    Left = 40
+    Top = 386
   end
 end
